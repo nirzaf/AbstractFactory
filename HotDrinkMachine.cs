@@ -2,34 +2,68 @@
 
 public class HotDrinkMachine
 {
-    public enum AvailableDrink
-    {
-        Coffee,
-        Tea
-    }
-
-    private Dictionary<AvailableDrink, IHotDrinkFactory> factories = new Dictionary<AvailableDrink, IHotDrinkFactory>();
-
+    private List<Tuple<string, IHotDrinkFactory>> _factories = new();
     public HotDrinkMachine()
     {
-        foreach (AvailableDrink drink in Enum.GetValues(typeof(AvailableDrink)))
+        foreach (var t in typeof(HotDrinkMachine).Assembly.GetTypes())
         {
-            try
+            if (typeof(IHotDrinkFactory).IsAssignableFrom(t) && !t.IsInterface)
             {
-                var factory = (IHotDrinkFactory) Activator.CreateInstance(
-                    Type.GetType("AbstracyFactory."+ Enum.GetName(typeof(AvailableDrink), drink)+ " Factory")
-                );
-                factories.Add(drink, factory);
+                _factories.Add(Tuple.Create(t.Name.Replace("Factory", String.Empty), 
+                  (IHotDrinkFactory) Activator.CreateInstance(t)));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+        } 
+    }
+
+    public IHotDrink MakeDrink()
+    {
+        Console.WriteLine("Available Drinks : ");
+        foreach (var tuple in _factories)
+        {
+            Console.WriteLine($"{tuple.Item1}, {tuple.Item2}");
+        }
+
+        while (true)
+        {
+
         }
     }
 
-    public IHotDrink MakeADrink(AvailableDrink drink, int amount)
-    {
-        return factories[drink].Prepare(amount);
-    }
+
+    //This will break the Open Close Principal
+
+    //public enum AvailableDrink
+    //{
+    //    Coffee,
+    //    Tea
+    //}
+
+    //private readonly Dictionary<AvailableDrink, IHotDrinkFactory> factories = new();
+
+    //public HotDrinkMachine()
+    //{
+    //    foreach (AvailableDrink drink in Enum.GetValues(typeof(AvailableDrink)))
+    //    {
+    //        try
+    //        {
+    //            var factory = (IHotDrinkFactory) Activator.CreateInstance(
+    //                Type.GetType("AbstracyFactory."+ Enum.GetName(typeof(AvailableDrink), drink)+ " Factory")
+    //            );
+    //            factories.Add(drink, factory);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            Console.WriteLine(ex);
+    //        }
+    //    }
+    //}
+
+    //public IHotDrink MakeADrink(AvailableDrink drink, int amount)
+    //{
+    //    return factories[drink].Prepare(amount);
+    //}
+
+
+
+
 }
